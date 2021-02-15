@@ -14,6 +14,24 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'import/export': 0,
+    'class-methods-use-this': ['error', {
+      exceptMethods: [
+        'beforeCreate',
+        'created',
+        'beforeMount',
+        'mounted',
+        'beforeUpdate',
+        'updated',
+        'activated',
+        'deactivated',
+        'beforeDestroy',
+        'destroyed',
+        'errorCaptured',
+        'getComponent',
+        'getItems',
+      ],
+    }],
   },
   overrides: [
     {

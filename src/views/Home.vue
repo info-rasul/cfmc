@@ -86,6 +86,7 @@ export default class Reports extends Vue {
   }
 
   initTable() {
+    this.items = [];
     this.setItems();
     this.setColumns().then(() => {
       this.loading = false;

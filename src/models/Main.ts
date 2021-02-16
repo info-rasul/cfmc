@@ -15,6 +15,23 @@ export type ReportsItem = {
   'id'?: number;
 }
 
+export enum ReportsItemEnum {
+  idVes = 'id_ves',
+  idRank = 'id_rank',
+  idRegion = 'id_region',
+  idRegionTo = 'id_region_to',
+  idInformationSource = 'id_information_source',
+  idRegime = 'id_regime',
+  date = 'date',
+  dateArrival = 'date_arrival',
+  timestamp = 'timestamp',
+  datetime = 'datetime',
+  permit = 'permit',
+  note = 'note',
+  isEdit = 'isEdit',
+  id = 'id',
+}
+
 type colsString<T> = {
   [P in keyof T]: string;
 };
@@ -30,9 +47,9 @@ type colsShow<T> = {
 export type ReportsKey = keyof ReportsItem;
 export type ColsTitles = colsString<ReportsItem>;
 export type ColsOrder = colsNumber<ReportsItem>;
-type ColsTypes = colsString<ReportsItem>;
-type ColsShow = colsShow<ReportsItem>;
-type ReportsData = Array<ReportsItem>;
+export type ColsTypes = colsString<ReportsItem>;
+export type ColsShow = colsShow<ReportsItem>;
+export type ReportsData = Array<ReportsItem>;
 
 export type MainResponse = {
   'PageTemplate': string;

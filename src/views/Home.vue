@@ -1,7 +1,7 @@
 <template>
   <div>
     <a v-if="loading" href="#" @click="initData()">Обработать данные</a>
-    <div v-else>
+    <div v-else :class="getPageTemplate">
       <h1>{{ h1Content }}</h1>
       <h2>{{ tableName }}</h2>
 
@@ -10,6 +10,7 @@
       <report-list
         :items="items"
         :columns="columns"
+        @shift-column="shiftColumn"
         @show-download="showDownload"
       />
     </div>
@@ -27,6 +28,10 @@ import {
   ReportsItem,
   ReportsKey,
   Columns,
+  ColsOrder,
+  ColsTitles,
+  ColsTypes,
+  ColsShow,
 } from '@/models';
 
 @Component({
@@ -46,7 +51,17 @@ export default class Reports extends Vue {
 
   items: ReportsItem[] = [];
 
+  data: ReportsItem[] = [];
+
   columns: Columns[] = [];
+
+  colsOrder: ColsOrder = {};
+
+  colsTitles: ColsTitles = {};
+
+  colsTypes: ColsTypes = {};
+
+  colsShow: ColsShow = {};
 
   initData() {
     this.loading = true;
@@ -55,12 +70,14 @@ export default class Reports extends Vue {
       .then((data: MainResponse) => {
         this.h1Content = data.H1Content;
         this.tableName = data.TableName;
+        this.colsOrder = data.ColsOrder;
+        this.colsTitles = data.ColsTitles;
+        this.colsTypes = data.ColsTypes;
+        this.colsShow = data.ColsShow;
+        this.data = data.Data;
         document.title = data.PageTitle;
         this.setPageTemplate(data.PageTemplate);
-        this.setItems(data.Data);
-        this.setColumns(data).then(() => {
-          this.loading = false;
-        });
+        this.initTable();
       })
       .catch((error) => {
         console.log(error);
@@ -68,22 +85,28 @@ export default class Reports extends Vue {
       });
   }
 
-  async setItems(items: ReportsItem[]) {
-    await items.forEach((item: ReportsItem) => {
+  initTable() {
+    this.setItems();
+    this.setColumns().then(() => {
+      this.loading = false;
+    });
+  }
+
+  async setItems() {
+    await this.data.forEach((item: ReportsItem) => {
       this.items.push({ ...item, isEdit: false });
     });
   }
 
-  async setColumns(data: MainResponse) {
-    const colsOrder: any = Object.keys(data.ColsOrder)
-      .sort((a: any, b: any) => data.ColsOrder[a] - data.ColsOrder[b]);
+  async setColumns() {
+    const colsOrderSort = this.sortObject(this.colsOrder);
 
-    await colsOrder.forEach((key: ReportsKey, value: number) => {
+    await colsOrderSort.forEach((key: ReportsKey, value: number) => {
       this.columns[value] = {
         key,
-        title: data.ColsTitles[key],
-        type: data.ColsTypes[key],
-        isShow: data.ColsShow[key] === 1,
+        title: this.colsTitles[key],
+        type: this.colsTypes[key],
+        isShow: this.colsShow[key] === 1,
       };
     });
   }
@@ -98,8 +121,40 @@ export default class Reports extends Vue {
   showDownload(show: boolean) {
     this.isShowDownload = show;
   }
+
+  // eslint-disable-next-line  class-methods-use-this
+  get getPageTemplate() {
+    return store.getters.pageTemplate && store.getters.pageTemplate.theme;
+  }
+
+  shiftColumn(key: ReportsKey, shift: number) {
+    const keyByValue = this.getKeyByValue(this.colsOrder, this.colsOrder[key] + shift);
+    if (keyByValue) {
+      if (this.colsShow[keyByValue]) {
+        const tmp = this.colsOrder[keyByValue];
+        this.colsOrder[keyByValue] = this.colsOrder[key];
+        this.colsOrder[key] = tmp;
+      } else {
+        this.shiftColumn(key, shift * 2);
+      }
+      this.initTable();
+    }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getKeyByValue(object: {}, value: string) {
+    return Object.keys(object).find((key) => object[key] === value);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  sortObject(object) {
+    return Object.keys(object)
+      .sort((a: string, b: string) => object[a] - object[b]);
+  }
 }
 </script>
 <style scoped lang="scss">
-
+.light {
+  font-family: Arial, sans-serif;
+}
 </style>

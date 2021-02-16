@@ -1,15 +1,15 @@
 <template>
-  <div :class="getPageTemplate">
+  <div>
     <table>
       <thead>
       <tr>
         <th></th>
-        <th
-          v-for="(column, index) in columns"
-          :style="{ display:(!column.isShow ? 'none' : '') }"
-          :key="index.key"
-        >
-          <column-header v-if="column.isShow" :column="column" />
+        <th v-for="(column, index) in columns" :class="{'hide': !column.isShow}" :key="index.key">
+          <column-header
+            v-if="column.isShow"
+            :column="column"
+            @shift-column="shiftColumn"
+          />
         </th>
       </tr>
       </thead>
@@ -25,7 +25,7 @@
         <td
           v-for="(column, indexColumn) in columns"
           :key="indexColumn"
-          :style="{ display:(!column.isShow ? 'none' : '') }"
+          :class="{'hide': !column.isShow}"
         >
           <component
             v-if="column.isShow"
@@ -46,9 +46,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import store from '@/store';
 import {
-  ReportsItem, Columns, ParamType, ReportsKey,
+  ReportsItem, Columns, ParamType, ReportsKey, ReportsItemEnum,
 } from '@/models';
 import ColumnHeader from './ColumnHeader.vue';
 import Controls from './Controls.vue';
@@ -73,8 +72,6 @@ export default class extends Vue {
   @Prop({ required: true }) columns!: Columns;
 
   editColumns: ReportsItem[] = [];
-
-  tableStyle = { }
 
   private getComponent(type: ParamType) {
     switch (type) {
@@ -118,17 +115,18 @@ export default class extends Vue {
       && Object.keys(this.editColumns[id]);
 
     if (editColsKey) {
-      editColsKey.forEach((row: any) => {
-        this.items[id][row] = this.editColumns[id][row];
+      editColsKey.forEach((row: string) => {
+        if (this.items[id][row]) {
+          this.items[id][row] = this.editColumns[id][row];
+        }
       });
       delete this.editColumns[id];
       this.$emit('show-download', true);
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this,getter-return
-  get getPageTemplate() {
-    return store.getters.pageTemplate && store.getters.pageTemplate.theme;
+  shiftColumn(key: ReportsKey, shift: -1 | 1) {
+    this.$emit('shift-column', key, shift);
   }
 }
 
@@ -136,10 +134,10 @@ export default class extends Vue {
 <style scoped lang="scss">
 .light {
   table {
-    font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
     color: #333;
+    font-size: 14px;
   }
 
   td, th {
@@ -151,23 +149,9 @@ export default class extends Vue {
   tr:nth-child(even) {
     background-color: #dddddd;
   }
-}
-.dark {
-  table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    color: #fff;
-  }
 
-  td, th {
-    border: 1px solid #f2f2f2;
-    text-align: left;
-    padding: 8px;
-  }
-
-  tr:nth-child(even) {
-    background-color: #dddddd;
+  .hide {
+    display: none;
   }
 }
 </style>

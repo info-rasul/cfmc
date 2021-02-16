@@ -1,5 +1,5 @@
 <template>
-  <div :class="getPageTemplate">
+  <div>
     <a @click="onGeneratedCSV" :href="href" :download="filename">Download CSV</a>
   </div>
 </template>
@@ -22,11 +22,6 @@ export default class extends Vue {
   href = '';
 
   filename = 'reports.csv';
-
-  // eslint-disable-next-line class-methods-use-this
-  get getPageTemplate() {
-    return store.getters.pageTemplate && store.getters.pageTemplate.theme;
-  }
 
   onGeneratedCSV() {
     let csv = '';
@@ -54,22 +49,14 @@ export default class extends Vue {
 <style scoped lang="scss">
 .light {
   a {
-    padding: 10px 20px;
+    padding: 5px 10px;
     color: #fff;
-    background: #006400;
-    border-radius: 5px;
+    background: #404040;
+    border-radius: 3px;
     display: inline-block;
     margin: 20px 0;
-  }
-}
-.dark {
-  a {
-    padding: 10px 20px;
-    color: #333;
-    background: #e7e7e7;
-    border-radius: 5px;
-    display: inline-block;
-    margin: 20px 0;
+    text-decoration: none;
+    font-family: Arial, sans-serif;
   }
 }
 </style>
